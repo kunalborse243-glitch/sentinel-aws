@@ -1,0 +1,379 @@
+You are a senior full-stack software engineer and AWS cloud security expert.
+
+Build a complete production-quality web application named "Sentinel AWS" - an AWS Cloud Security Auditing Tool.
+
+The project should look like it was handcrafted by an experienced developer, not AI-generated.
+
+====================================================
+PROJECT GOAL
+====================================================
+
+The application audits an AWS account for security misconfigurations using the AWS SDK (Boto3) and generates a professional security dashboard and downloadable reports.
+
+The application must ONLY perform READ-ONLY operations.
+
+Never modify or delete AWS resources.
+
+====================================================
+TECH STACK
+====================================================
+
+Backend:
+- Python
+- FastAPI
+- SQLAlchemy
+- PostgreSQL (SQLite fallback for local development)
+- Boto3
+- JWT Authentication
+
+Frontend:
+- HTML
+- CSS
+- Vanilla JavaScript
+- Jinja2 Templates
+
+Deployment:
+- Replit compatible
+
+====================================================
+DESIGN REQUIREMENTS
+====================================================
+
+The UI must NOT look AI-generated.
+
+Do NOT use a dark cyberpunk theme.
+
+Instead create a premium SaaS dashboard.
+
+Theme:
+
+- White background
+- Soft blue accent colors
+- Light grey cards
+- Rounded corners
+- Soft shadows
+- Plenty of whitespace
+- Professional typography
+- Smooth animations
+- Responsive layout
+
+Use inspiration similar to:
+
+Stripe
+Linear
+Notion
+Vercel Dashboard
+
+Avoid flashy gradients everywhere.
+
+Use subtle animations only.
+
+====================================================
+AUTHENTICATION
+====================================================
+
+Implement:
+
+Register
+
+Login
+
+Logout
+
+JWT authentication
+
+Profile page
+
+====================================================
+DATABASE
+====================================================
+
+Users table
+
+AWS Connections table
+
+Audit History table
+
+Findings table
+
+====================================================
+AWS CONNECTIONS
+====================================================
+
+User can:
+
+Add AWS Account
+
+Fields:
+
+Connection Name
+
+Access Key ID
+
+Secret Access Key
+
+Default Region
+
+Never request Root credentials.
+
+Only support IAM Users with ReadOnly permissions.
+
+Allow multiple AWS accounts.
+
+====================================================
+SCANNER MODULES
+====================================================
+
+Create separate scanner files.
+
+1 IAM Scanner
+
+Check:
+
+Users without MFA
+
+Old access keys
+
+Unused users
+
+Administrator permissions
+
+Weak password policy
+
+2 S3 Scanner
+
+Check:
+
+Public buckets
+
+Bucket encryption
+
+Versioning
+
+Block Public Access
+
+ACL
+
+3 EC2 Scanner
+
+Check:
+
+Public IPs
+
+Missing IAM Role
+
+Unencrypted EBS
+
+Stopped instances
+
+4 Security Groups
+
+Detect:
+
+Port 22 open
+
+Port 3389 open
+
+Port 3306 open
+
+Port 5432 open
+
+0.0.0.0/0 rules
+
+5 CloudTrail
+
+Check:
+
+Enabled
+
+Multi-region
+
+Encryption
+
+Log validation
+
+====================================================
+SECURITY SCORE
+====================================================
+
+Calculate score from 0-100.
+
+Categories:
+
+IAM
+
+S3
+
+EC2
+
+Networking
+
+CloudTrail
+
+Overall score
+
+Display circular progress bar.
+
+====================================================
+DASHBOARD
+====================================================
+
+Dashboard should include:
+
+Overall Security Score
+
+Critical findings
+
+High findings
+
+Medium findings
+
+Low findings
+
+Service-wise score cards
+
+Recent scans
+
+Recent findings
+
+Charts
+
+====================================================
+REPORT PAGE
+====================================================
+
+Generate:
+
+Professional PDF
+
+CSV Export
+
+Include:
+
+Finding
+
+Severity
+
+Description
+
+Affected resource
+
+Recommendation
+
+====================================================
+SCAN HISTORY
+====================================================
+
+Store every scan.
+
+Allow user to compare previous scans.
+
+====================================================
+SIDEBAR
+====================================================
+
+Dashboard
+
+AWS Accounts
+
+Start Scan
+
+Reports
+
+History
+
+Profile
+
+Settings
+
+====================================================
+TOP NAVBAR
+====================================================
+
+Notification icon
+
+Search
+
+Profile dropdown
+
+====================================================
+EXTRA FEATURES
+====================================================
+
+Loading animation while scanning
+
+Progress indicator
+
+Search findings
+
+Filter by severity
+
+Pagination
+
+Success messages
+
+Error handling
+
+Beautiful empty states
+
+Responsive design
+
+====================================================
+PROJECT STRUCTURE
+====================================================
+
+Organize code properly.
+
+Separate:
+
+routers
+
+models
+
+services
+
+templates
+
+static
+
+database
+
+utils
+
+====================================================
+CODE QUALITY
+====================================================
+
+Write clean modular code.
+
+Use comments where necessary.
+
+Follow FastAPI best practices.
+
+No duplicated code.
+
+====================================================
+README
+====================================================
+
+Generate a professional README including:
+
+Installation
+
+Configuration
+
+Required AWS IAM permissions
+
+How to run
+
+How to deploy on Replit
+
+====================================================
+IMPORTANT
+====================================================
+
+The application must look like a real SaaS product developed by humans.
+
+Focus heavily on UI polish, usability, clean architecture and maintainability.
+
+Build the project step-by-step and ensure every module works correctly before proceeding to the next.

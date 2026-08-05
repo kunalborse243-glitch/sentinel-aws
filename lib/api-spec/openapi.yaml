@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Sentinel AWS - Cloud Security Auditing Tool API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: accounts
+    description: AWS account connections
+  - name: scans
+    description: Security scans
+  - name: findings
+    description: Security findings
+  - name: dashboard
+    description: Dashboard summary
+  - name: reports
+    description: Report generation
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,7 +36,538 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Auth
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/profile:
+    put:
+      operationId: updateProfile
+      tags: [auth]
+      summary: Update profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # AWS Accounts
+  /accounts:
+    get:
+      operationId: listAccounts
+      tags: [accounts]
+      summary: List AWS accounts
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AwsAccount"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      operationId: createAccount
+      tags: [accounts]
+      summary: Add AWS account
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AwsAccount"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /accounts/{id}:
+    get:
+      operationId: getAccount
+      tags: [accounts]
+      summary: Get AWS account
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AwsAccount"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      operationId: updateAccount
+      tags: [accounts]
+      summary: Update AWS account
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountRequest"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AwsAccount"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteAccount
+      tags: [accounts]
+      summary: Delete AWS account
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /accounts/{id}/test:
+    post:
+      operationId: testAccountConnection
+      tags: [accounts]
+      summary: Test AWS account connection
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Connection test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionTestResult"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Scans
+  /scans:
+    get:
+      operationId: listScans
+      tags: [scans]
+      summary: List scan history
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: accountId
+          schema:
+            type: number
+        - in: query
+          name: page
+          schema:
+            type: number
+        - in: query
+          name: limit
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Scan list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      operationId: startScan
+      tags: [scans]
+      summary: Start a new security scan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartScanRequest"
+      responses:
+        "202":
+          description: Scan started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /scans/{id}:
+    get:
+      operationId: getScan
+      tags: [scans]
+      summary: Get scan details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Scan details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /scans/{id}/compare/{compareWithId}:
+    get:
+      operationId: compareScan
+      tags: [scans]
+      summary: Compare scan with a previous scan
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+        - in: path
+          name: compareWithId
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Comparison result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanComparison"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Findings
+  /findings:
+    get:
+      operationId: listFindings
+      tags: [findings]
+      summary: List findings
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: scanId
+          schema:
+            type: number
+        - in: query
+          name: accountId
+          schema:
+            type: number
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum: [critical, high, medium, low, informational]
+        - in: query
+          name: service
+          schema:
+            type: string
+            enum: [iam, s3, ec2, security_groups, cloudtrail]
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: number
+        - in: query
+          name: limit
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Findings list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindingListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Dashboard
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: accountId
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Reports
+  /reports/csv:
+    get:
+      operationId: downloadCsvReport
+      tags: [reports]
+      summary: Download findings as CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: scanId
+          schema:
+            type: number
+        - in: query
+          name: accountId
+          schema:
+            type: number
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reports/summary:
+    get:
+      operationId: getReportSummary
+      tags: [reports]
+      summary: Get report summary data
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: scanId
+          schema:
+            type: number
+        - in: query
+          name: accountId
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Report summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummary"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +577,444 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    # Auth
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 8
+      required:
+        - name
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - createdAt
+
+    # AWS Accounts
+    CreateAccountRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        accessKeyId:
+          type: string
+        secretAccessKey:
+          type: string
+        region:
+          type: string
+      required:
+        - name
+        - accessKeyId
+        - secretAccessKey
+        - region
+
+    UpdateAccountRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        accessKeyId:
+          type: string
+        secretAccessKey:
+          type: string
+        region:
+          type: string
+
+    AwsAccount:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        accessKeyId:
+          type: string
+        region:
+          type: string
+        lastScanAt:
+          type: ["string", "null"]
+        lastScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - accessKeyId
+        - region
+        - createdAt
+
+    ConnectionTestResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        accountId:
+          type: ["string", "null"]
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    # Scans
+    StartScanRequest:
+      type: object
+      properties:
+        accountId:
+          type: number
+        modules:
+          type: array
+          items:
+            type: string
+            enum: [iam, s3, ec2, security_groups, cloudtrail]
+      required:
+        - accountId
+
+    Scan:
+      type: object
+      properties:
+        id:
+          type: number
+        accountId:
+          type: number
+        accountName:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        progress:
+          type: number
+        currentModule:
+          type: ["string", "null"]
+        overallScore:
+          type: ["number", "null"]
+        iamScore:
+          type: ["number", "null"]
+        s3Score:
+          type: ["number", "null"]
+        ec2Score:
+          type: ["number", "null"]
+        networkingScore:
+          type: ["number", "null"]
+        cloudtrailScore:
+          type: ["number", "null"]
+        criticalCount:
+          type: number
+        highCount:
+          type: number
+        mediumCount:
+          type: number
+        lowCount:
+          type: number
+        startedAt:
+          type: string
+        completedAt:
+          type: ["string", "null"]
+        errorMessage:
+          type: ["string", "null"]
+      required:
+        - id
+        - accountId
+        - accountName
+        - status
+        - progress
+        - criticalCount
+        - highCount
+        - mediumCount
+        - lowCount
+        - startedAt
+
+    ScanDetail:
+      allOf:
+        - $ref: "#/components/schemas/Scan"
+        - type: object
+          properties:
+            findings:
+              type: array
+              items:
+                $ref: "#/components/schemas/Finding"
+          required:
+            - findings
+
+    ScanListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Scan"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+        totalPages:
+          type: number
+      required:
+        - data
+        - total
+        - page
+        - limit
+        - totalPages
+
+    ScanComparison:
+      type: object
+      properties:
+        current:
+          $ref: "#/components/schemas/Scan"
+        previous:
+          $ref: "#/components/schemas/Scan"
+        scoreDelta:
+          type: number
+        newFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        resolvedFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        persistingFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+      required:
+        - current
+        - previous
+        - scoreDelta
+        - newFindings
+        - resolvedFindings
+        - persistingFindings
+
+    # Findings
+    Finding:
+      type: object
+      properties:
+        id:
+          type: number
+        scanId:
+          type: number
+        service:
+          type: string
+          enum: [iam, s3, ec2, security_groups, cloudtrail]
+        checkId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        affectedResource:
+          type: string
+        recommendation:
+          type: string
+        metadataJson:
+          type: ["string", "null"]
+      required:
+        - id
+        - scanId
+        - service
+        - checkId
+        - title
+        - description
+        - severity
+        - affectedResource
+        - recommendation
+
+    FindingListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+        totalPages:
+          type: number
+      required:
+        - data
+        - total
+        - page
+        - limit
+        - totalPages
+
+    # Dashboard
+    ServiceScore:
+      type: object
+      properties:
+        service:
+          type: string
+        score:
+          type: number
+        criticalCount:
+          type: number
+        highCount:
+          type: number
+        mediumCount:
+          type: number
+        lowCount:
+          type: number
+      required:
+        - service
+        - score
+        - criticalCount
+        - highCount
+        - mediumCount
+        - lowCount
+
+    DashboardSummary:
+      type: object
+      properties:
+        overallScore:
+          type: ["number", "null"]
+        lastScanAt:
+          type: ["string", "null"]
+        totalAccounts:
+          type: number
+        totalScans:
+          type: number
+        criticalCount:
+          type: number
+        highCount:
+          type: number
+        mediumCount:
+          type: number
+        lowCount:
+          type: number
+        serviceScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceScore"
+        recentScans:
+          type: array
+          items:
+            $ref: "#/components/schemas/Scan"
+        recentFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        scoreHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoreHistoryPoint"
+      required:
+        - totalAccounts
+        - totalScans
+        - criticalCount
+        - highCount
+        - mediumCount
+        - lowCount
+        - serviceScores
+        - recentScans
+        - recentFindings
+        - scoreHistory
+
+    ScoreHistoryPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        score:
+          type: number
+      required:
+        - date
+        - score
+
+    # Reports
+    ReportSummary:
+      type: object
+      properties:
+        scan:
+          $ref: "#/components/schemas/Scan"
+        criticalFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        highFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        mediumFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        lowFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+      required:
+        - scan
+        - criticalFindings
+        - highFindings
+        - mediumFindings
+        - lowFindings

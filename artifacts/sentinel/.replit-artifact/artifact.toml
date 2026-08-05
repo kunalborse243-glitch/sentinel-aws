@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Sentinel AWS"
+description = "A premium SaaS AWS Cloud Security Auditing Tool. Users connect their AWS accounts, run security scans across IAM, S3, EC2, Security Groups, and CloudTrail, and get a scored dashboard with actionable findings and downloadable reports."
+version = "1.0.0"
+id = "artifacts/sentinel"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18756
+
+[services.development]
+run = "pnpm --filter @workspace/sentinel run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sentinel", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sentinel/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18756"
+BASE_PATH = "/"

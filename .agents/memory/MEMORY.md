@@ -1,0 +1,4 @@
+- [Sentinel AWS stack](sentinel-stack.md) — Node/TS monorepo adaptation of Python/FastAPI spec; React Vite + Express + AWS SDK v3 + Drizzle/Postgres.
+- [buttonVariants cva pattern](button-cva.md) — design subagents may emit buttonVariants as a plain string; shadcn components call it as a function — always use cva().
+- [Orval query options v5](orval-query-options.md) — TanStack Query v5 UseQueryOptions requires queryKey; cast partial options as `as any` when passing only `enabled`/`refetchInterval`.
+- [OpenAPI codegen fixes](openapi-codegen-fixes.md) — Zod v3 incompatible with type:integer/format:email; use type:number and omit format:email. nullable:true → type:["x","null"]. Avoid query params that collide with operation names.
