@@ -19,13 +19,19 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
+const basePath = (() => {
+  const value = (process.env.BASE_PATH ?? '/').replace(/\\/g, '/');
 
-if (!basePath) {
-  throw new Error(
-    'BASE_PATH environment variable is required but was not provided.',
-  );
-}
+  if (value.includes('/Program%20Files/Git') || value.includes('/Program Files/Git')) {
+    return '/';
+  }
+
+  if (!value.startsWith('/')) {
+    return `/${value}`;
+  }
+
+  return value;
+})();
 
 export default defineConfig({
   base: basePath,
@@ -69,6 +75,13 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     fs: {
       strict: true,
     },
@@ -77,5 +90,12 @@ export default defineConfig({
     port,
     host: '0.0.0.0',
     allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 });

@@ -18,6 +18,16 @@ import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
 
+const appBase = (() => {
+  const value = (import.meta.env.BASE_URL ?? '/').replace(/\\/g, '/');
+
+  if (value.includes('/Program%20Files/Git') || value.includes('/Program Files/Git')) {
+    return '/';
+  }
+
+  return value.replace(/\/+$/, '');
+})();
+
 // A wrapper to protect routes that require authentication
 function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -68,7 +78,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <WouterRouter base={import.meta.env.BASE_URL?.replace(/\/$/, '')}>
+        <WouterRouter base={appBase}>
           <Router />
         </WouterRouter>
         <Toaster position="top-right" richColors />
